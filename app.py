@@ -37,31 +37,45 @@ def index():
     return render_template("index.html")
 
 
+# @app.route("/captcha", methods=["GET"])
+# def get_captcha():
+#     """
+#     Endpoint: GET /captcha
+#     Generates a text challenge and saves the fuzzy image to disk.
+#     """
+#     global current_captcha_answer
+#     current_captcha_answer = generate_random_text()
+
+#     # Create the visual challenge and save to disk
+#     image = ImageCaptcha(width=280, height=90)
+
+#     # Save directly into the static folder
+#     image.write(current_captcha_answer, 'static/captcha.png')
+    
+#     #with open("captcha.png", "wb") as f:
+#     #    f.write(image_data.read())
+
+#     return jsonify({
+#         "status": "generated",
+#         "message": "New captcha image created as 'captcha.png'",
+#         "debug_text": current_captcha_answer  # Hidden in production, used for lab testing
+#     }), 200
+#     #return jsonify({"status": "generated"}), 200
 @app.route("/captcha", methods=["GET"])
 def get_captcha():
-    """
-    Endpoint: GET /captcha
-    Generates a text challenge and saves the fuzzy image to disk.
-    """
-    global current_captcha_answer
-    current_captcha_answer = generate_random_text()
+    captcha_text = generate_random_text()
+    session["captcha"] = captcha_text
 
-    # Create the visual challenge and save to disk
     image = ImageCaptcha(width=280, height=90)
 
-    # Save directly into the static folder
-    image.write(current_captcha_answer, 'static/captcha.png')
-    
-    #with open("captcha.png", "wb") as f:
-    #    f.write(image_data.read())
+    filename = f"captcha_{random.randint(1000,9999)}.png"
+    image_path = os.path.join("static", filename)
+
+    image.write(captcha_text, image_path)
 
     return jsonify({
-        "status": "generated",
-        "message": "New captcha image created as 'captcha.png'",
-        "debug_text": current_captcha_answer  # Hidden in production, used for lab testing
-    }), 200
-    #return jsonify({"status": "generated"}), 200
-
+        "captcha_url": f"/static/{filename}"
+    })
 @app.route("/static/<path:filename>")
 def serve_static(filename):
     # Helps the browser find the image inside the static folder
