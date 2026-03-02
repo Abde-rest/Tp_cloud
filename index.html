@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CAPTCHA App</title>
+</head>
+<body>
+
+<h2>CAPTCHA Verification</h2>
+
+<img id="captchaImage" src="" width="200">
+<br><br>
+
+<input type="text" id="captchaInput" placeholder="Enter CAPTCHA">
+<button onclick="verifyCaptcha()">Verify</button>
+
+<p id="result"></p>
+
+<script>
+function loadCaptcha() {
+    fetch("/captcha")
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById("captchaImage").src = data.captcha_url + "?" + new Date().getTime();
+    });
+}
+
+function verifyCaptcha() {
+    let value = document.getElementById("captchaInput").value;
+
+    fetch("/verify", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({captcha: value})
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById("result").innerText = data.result;
+        loadCaptcha();
+    });
+}
+
+loadCaptcha();
+</script>
+
+</body>
+</html>
